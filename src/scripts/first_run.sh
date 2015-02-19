@@ -1,5 +1,21 @@
 #!/bin/sh
 
+MYSQL_DB_REINITIALIZED="0"
+
+load_dumps() {
+  if [[ -d "${FIRST_RUN_DUMP_DIR}" && "$(ls -A ${FIRST_RUN_DUMP_DIR})" ]]; then
+      USER_AND_PASS=$(mysql_get_user_and_pass_params)
+      for dumpfile in $(ls -v ${FIRST_RUN_DUMP_DIR}); do
+          echo 'executing dumpfile : '$dumpfile
+	      mysql $USER_AND_PASS < "${FIRST_RUN_DUMP_DIR}/${dumpfile}"
+	      [[ $? -eq "0" ]] || {
+            echo '[ERROR] FAILED LOADING DUMP > ' "${FIRST_RUN_DUMP_DIR}/${dumpfile}"
+            exit 1
+          }
+      done
+  fi
+}
+
 configure_login(){
   # Echo out info to later obtain by running `docker logs container_name`
   echo "MARIADB_USER=$USER"
@@ -11,6 +27,7 @@ configure_login(){
       echo "Initializing MariaDB at $DATA_DIR"
       # Copy the data that we generated within the container to the empty DATA_DIR.
       cp -Rp /var/lib/mysql/* $DATA_DIR
+      MYSQL_DB_REINITIALIZED="1"
   fi
   echo "chowning $DATA_DIR"
   # Ensure mysql owns the DATA_DIR which may come from another filesystem
@@ -53,5 +70,8 @@ mysql_pre_start_action(){
 
 mysql_post_start_action(){
     set_authentication
+    [[ ${MYSQL_DB_REINITIALIZED} == "1" ]] && {
+        load_dumps
+    }
     rm /firstrun
 }

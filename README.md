@@ -23,16 +23,49 @@ $ docker build -t="fvigotti/mariadb" ./src/
                                                                                                                                          
 ## Docker run
 
-
 ``` shell
 mkdir -p /tmp/mariadb
-docker run -d --name="mariadb" \
-             -p 127.0.0.1:3306:3306 \
-             -v /tmp/mariadb:/data \
-             -e USER="root" \
-             -e PASS="a" \
-             fvigotti/mariadb
+docker run -d --name="mariadb" -p 127.0.0.1:3306:3306  -v /tmp/mariadb:/data -e USER="root" -e PASS="a" fvigotti/mariadb
 ```
+
+## Docker run with bootstrap databases example :
+``` shell
+BOOTSTRAP_DUMP_DIR=/tmp/mariadb/mariadb_bootstrap  
+DB_DIR=/tmp/mariadb  
+mkdir -p $DB_DIR    
+mkdir -p $BOOTSTRAP_DUMP_DIR    
+
+cat > ${BOOTSTRAP_DUMP_DIR}/001_start.sql <<EOL  
+    CREATE DATABASE test_db1 CHARACTER SET utf8;  
+EOL  
+
+cat > ${BOOTSTRAP_DUMP_DIR}/002_mid.sql <<EOL    
+    use test_db1;  
+    CREATE TABLE \`tab_1\` (  
+    \`maintenanceid\`          bigint unsigned                           NOT NULL,  
+    \`name\`                   varchar(128)    DEFAULT ''                NOT NULL,  
+    PRIMARY KEY (maintenanceid)  
+    ) ENGINE=InnoDB ;  
+EOL  
+
+cat > ${BOOTSTRAP_DUMP_DIR}/003_end.sql <<EOL  
+    use test_db1;  
+    CREATE UNIQUE INDEX \`name_index_2\` ON \`tab_1\` (\`name\`)  ;  
+EOL  
+     
+  
+docker run --rm -ti -e "USER=b" -e "PASS=a" -v "${DB_DIR}:/data"  -v "${BOOTSTRAP_DUMP_DIR}:/first_run_dumps" fvigotti/mariadb  
+
+```
+
+
+## mysql initializations dumps
+mount initialization scripts on /first_run_dumps
+```shell
+-v /tmp/dumps:/first_run_dumps
+```
+dumps will be loaded only during first_run and only if the $DATA_DIR is completely empty
+
 
 ## todo
 
