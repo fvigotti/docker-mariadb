@@ -8,7 +8,7 @@ USER=${USER:-root}
 PWGENERATED_PASSWORD=""
 
 # generate password password
-[[ "${PASS}" == "pwgen" ]] && {
+[[ "${PASS}" == "pwgen" || -z "${PASS}" ]] && {
     PASS=$(pwgen -s -1 16)
     PWGENERATED_PASSWORD="1"
 }
@@ -57,6 +57,24 @@ wait_for_mysql_to_stop() {
 
 }
 
+# local action allows TRAP to catch signaling
+wait_for_mysql_to_stop_local_action() {
+  echo 'wait_for_mysql_to_stop... '
+
+  # Wait for mysql to finish starting up first.
+  while [[ -e /run/mysqld/mysqld.sock ]] ; do
+      echo 'start inotify'
+      inotifywait -q -e delete /run/mysqld/ >> /dev/null &
+      COMMAND_PID=$!
+      wait $COMMAND_PID || {
+       echo 'inotify wait failed!'$?
+       return 1
+      }
+  done
+  echo "mysql stopped"
+  return 0
+
+}
 
 
 if [[ -e /firstrun ]]; then
@@ -98,6 +116,6 @@ final_actions
 
 
 echo "wait start"
-wait_for_mysql_to_stop
+wait_for_mysql_to_stop_local_action
 echo "wait ended"
 
