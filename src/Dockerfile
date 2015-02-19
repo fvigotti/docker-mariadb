@@ -35,3 +35,5 @@ VOLUME ["${DATA_DIR}", "/var/log/mysql", "/etc/mysql"]
 
 # Expose ports.
 EXPOSE 3306
+
+CMD /bin/bash -c "/scripts/supervisor.sh"
