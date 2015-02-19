@@ -13,6 +13,22 @@ PWGENERATED_PASSWORD=""
     PWGENERATED_PASSWORD="1"
 }
 
+# test connection params, passwordless or with password
+# return the "-u$username -p$password" required on mysql connections commands
+mysql_get_user_and_pass_params(){
+mysql -u$USER  -e  "" 1>/dev/null 2>&1 ; [[ $? -eq 0 ]] && {
+    echo "-u $USER"
+    } || {
+        mysql -u$USER -p${PASS}  -e  "" 1>/dev/null 2>&1 ; [[ $? -eq 0 ]] && {
+            echo "-u$USER -p$PASS "
+        } || {
+            echo "INVALID USERNAME OR PASSWORD PARAMS : -u$USER -p$PASS " >&2
+            exit 1
+        }
+    }
+}
+
+
 mysql_pre_start_action() {
 :
 }
@@ -40,7 +56,8 @@ wait_for_mysql_to_start() {
 
 stop_mysql() {
 echo 'stop mysql command start '`date`' -u '"${USER}"'  -p '"${PASS}"
-mysqladmin -u"${USER}" -p"${PASS}" shutdown &
+USER_AND_PASS=$(mysql_get_user_and_pass_params)
+mysqladmin $USER_AND_PASS shutdown &
 echo 'stop mysql command done '`date`
 
 }

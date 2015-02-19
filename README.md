@@ -25,8 +25,8 @@ $ docker build -t="fvigotti/mariadb" ./src/
 
 
 ``` shell
-$ mkdir -p /tmp/mariadb
-$ docker run -d -name="mariadb" \
+mkdir -p /tmp/mariadb
+docker run -d --name="mariadb" \
              -p 127.0.0.1:3306:3306 \
              -v /tmp/mariadb:/data \
              -e USER="root" \
@@ -36,4 +36,5 @@ $ docker run -d -name="mariadb" \
 
 ## todo
 
-loadable mysql database initialization/restart dumps from shared volume
+- loadable mysql database initialization/restart dumps from shared volume
+- run supervisor as entrypoint and grab command as options in order to reset database password / load dump/ ... or perform other actions as needed 
