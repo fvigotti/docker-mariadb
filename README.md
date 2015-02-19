@@ -33,3 +33,7 @@ $ docker run -d -name="mariadb" \
              -e PASS="a" \
              fvigotti/mariadb
 ```
+
+## todo
+
+loadable mysql database initialization/restart dumps from shared volume

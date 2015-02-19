@@ -63,9 +63,10 @@ wait_for_mysql_to_stop_local_action() {
 
   # Wait for mysql to finish starting up first.
   while [[ -e /run/mysqld/mysqld.sock ]] ; do
-      echo 'start inotify'
+      echo 'start detached inotify'
       inotifywait -q -e delete /run/mysqld/ >> /dev/null &
       COMMAND_PID=$!
+      echo 'inotify pid = '$COMMAND_PID
       wait $COMMAND_PID || {
        echo 'inotify wait failed!'$?
        return 1
