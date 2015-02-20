@@ -13,6 +13,7 @@ RUN apt-get install software-properties-common && \
 ENV DATA_DIR /data
 ENV FIRST_RUN_DUMP_DIR /first_run_dumps
 
+
 ADD scripts /scripts
 RUN chmod +x /scripts/supervisor.sh && \
     touch /firstrun && \

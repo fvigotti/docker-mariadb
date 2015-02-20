@@ -6,8 +6,9 @@ load_dumps() {
   if [[ -d "${FIRST_RUN_DUMP_DIR}" && "$(ls -A ${FIRST_RUN_DUMP_DIR})" ]]; then
       USER_AND_PASS=$(mysql_get_user_and_pass_params)
       for dumpfile in $(ls -v ${FIRST_RUN_DUMP_DIR}); do
+          FIRST_RUN_DUMP_LOAD_PARAMS=${FIRST_RUN_DUMP_LOAD_PARAMS:-}
           echo 'executing dumpfile : '$dumpfile
-	      mysql $USER_AND_PASS < "${FIRST_RUN_DUMP_DIR}/${dumpfile}"
+	      mysql $USER_AND_PASS $FIRST_RUN_DUMP_LOAD_PARAMS < "${FIRST_RUN_DUMP_DIR}/${dumpfile}"
 	      [[ $? -eq "0" ]] || {
             echo '[ERROR] FAILED LOADING DUMP > ' "${FIRST_RUN_DUMP_DIR}/${dumpfile}"
             exit 1

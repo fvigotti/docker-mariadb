@@ -63,11 +63,17 @@ docker run --rm -ti -e "USER=b" -e "PASS=a" -v "${DB_DIR}:/data"  -v "${BOOTSTRA
 
 
 ## mysql initializations dumps
-mount initialization scripts on /first_run_dumps
+files contained on directory /first_run_dumps will be loaded during the first_run execution (when database files does not exists in data directory)
+
 ```shell
 -v /tmp/dumps:/first_run_dumps
 ```
-dumps will be loaded only during first_run and only if the $DATA_DIR is completely empty
+
+additional param to load dumps can be set with
+
+```shell
+-e "FIRST_RUN_DUMP_LOAD_PARAMS=-D test_database" 
+```
 
 
 ## todo
