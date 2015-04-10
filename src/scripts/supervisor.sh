@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ZABBIX_PIDFILE="/var/log/zabbix/zabbix_server.pid"
-
 # default USER=root
 USER=${USER:-root}
 
@@ -45,10 +43,15 @@ final_actions() {
 
 wait_for_mysql_to_start() {
   echo 'wait_for_mysql_to_start'
+  let loopTimeOut=$(date +%s)+60
 
   # Wait for mysql to finish starting up first.
   while [[ ! -e /run/mysqld/mysqld.sock ]] ; do
-      inotifywait -q -e create /run/mysqld/ >> /dev/null
+      inotifywait -t 61 -q -e create /run/mysqld/ >> /dev/null
+      if [ $(date +%s) -gt $loopTimeOut ]; then
+       echo "socket creation timed out"
+       break
+      fi
   done
   echo "mysql started"
   return 0
@@ -78,10 +81,10 @@ wait_for_mysql_to_stop() {
 wait_for_mysql_to_stop_local_action() {
   echo 'wait_for_mysql_to_stop... '
 
-  # Wait for mysql to finish starting up first.
+  # Wait for mysql to closing socket
   while [[ -e /run/mysqld/mysqld.sock ]] ; do
       echo 'start detached inotify'
-      inotifywait -q -e delete /run/mysqld/ >> /dev/null &
+      inotifywait -t 60 -q -e delete /run/mysqld/ >> /dev/null &
       COMMAND_PID=$!
       echo 'inotify pid = '$COMMAND_PID
       wait $COMMAND_PID || {

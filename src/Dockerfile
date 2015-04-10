@@ -1,4 +1,4 @@
-FROM fvigotti/fatubuntu
+FROM fvigotti/fatubuntu:nomysql
 
 RUN apt-get install software-properties-common && \
   apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db && \
