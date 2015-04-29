@@ -15,6 +15,7 @@ ENV FIRST_RUN_DUMP_DIR /first_run_dumps
 
 
 ADD scripts /scripts
+
 RUN chmod +x /scripts/supervisor.sh && \
     touch /firstrun && \
     mkdir -p ${FIRST_RUN_DUMP_DIR}
@@ -27,9 +28,13 @@ RUN chmod +x /scripts/supervisor.sh && \
 # Change the innodb-buffer-pool-size to 128M (default is 256M).
 # This should make it friendlier to run on low memory servers.
 
-RUN sed -i -e 's/^datadir\s*=.*/datadir = \'${DATA_DIR}'/' /etc/mysql/my.cnf && \
-    sed -i -e 's/^bind-address/#bind-address/' /etc/mysql/my.cnf && \
-    sed -i -e 's/^innodb_buffer_pool_size\s*=.*/innodb_buffer_pool_size = 128M/' /etc/mysql/my.cnf
+#RUN sed -i -e 's/^datadir\s*=.*/datadir = \'${DATA_DIR}'/' /etc/mysql/my.cnf && \
+#    sed -i -e 's/^bind-address/#bind-address/' /etc/mysql/my.cnf && \
+#    sed -i -e 's/^innodb_buffer_pool_size\s*=.*/innodb_buffer_pool_size = 128M/' /etc/mysql/my.cnf
+
+RUN rm /etc/mysql/my.cnf
+ADD my.cnf /etc/mysql/my.cnf
+RUN chmod 644 /etc/mysql/my.cnf
 
 EXPOSE 3306
 

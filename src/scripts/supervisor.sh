@@ -32,7 +32,8 @@ mysql_pre_start_action() {
 }
 mysql_start_action() {
  mysqld_safe &
- return $$
+ export MYSQL_PID=$!
+ return $MYSQL_PID
 }
 mysql_post_start_action() {
 :
@@ -83,14 +84,14 @@ wait_for_mysql_to_stop_local_action() {
 
   # Wait for mysql to closing socket
   while [[ -e /run/mysqld/mysqld.sock ]] ; do
-      echo 'start detached inotify'
-      inotifywait -t 60 -q -e delete /run/mysqld/ >> /dev/null &
-      COMMAND_PID=$!
-      echo 'inotify pid = '$COMMAND_PID
-      wait $COMMAND_PID || {
-       echo 'inotify wait failed!'$?
-       return 1
-      }
+      #echo 'restart detached inotify process'
+      inotifywait -t 600 -q -e delete /run/mysqld/ >> /dev/null &
+      INOTIFY_BACKGROUNDED_PID=$!
+#      echo 'inotify pid = '$COMMAND_PID
+      wait $INOTIFY_BACKGROUNDED_PID
+#       echo 'inotify wait failed!'$?
+      # ps auxw
+#       return 1
   done
   echo "mysql stopped"
   return 0
@@ -124,7 +125,9 @@ trap "clean_up SIGKILL" SIGKILL
 
 
 mysql_pre_start_action
-mysql_start_action && MYSQL_PID=$?
+mysql_start_action
+
+
 echo 'mysqld started , pid = '$MYSQL_PID
 wait_for_mysql_to_start
 mysql_post_start_action
